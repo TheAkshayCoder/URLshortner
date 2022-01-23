@@ -1,4 +1,5 @@
 const express = require('express')
+const req = require('express/lib/request')
 const app = express()
 const mongoose = require('mongoose')
 const ShortUrl=require('./models/shorturl')
@@ -15,8 +16,16 @@ app.get('/',async (req,res)=>{
 })
 
 app.post('/shorturls',async (req,res)=>{
-    await ShortUrl.create({full:req.body.fullUrl})
+    await ShortUrl.create({full:req.body.fullurl})
     res.redirect('/')
+})
+
+app.get('/:shortUrl', async (req,res)=>{
+    const shortUrl = await ShortUrl.findOne({short:req.params.shortUrl})
+    if (shortUrl==null) return res.sendStatus(404)
+    shortUrl.clicks++
+    shortUrl.save()
+    res.redirect(shortUrl.full)
 })
 app.listen(process.env.PORT||5000)
 
